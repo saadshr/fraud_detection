@@ -1,0 +1,18 @@
+# Environnement virtuel
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Données (Très important pour éviter les fichiers de +100Mo)
+data/
+outputs/
+
+# Modèles et autres
+models/
+*.pkl
+.env
+.DS_Store
