@@ -1,66 +1,67 @@
-# 🔍 Smart Fraud Detection System
+# 🛡️ Smart Fraud Detection
 
-![Python](https://img.shields.io/badge/Python-3.10-blue)
-![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3-orange)
-![XGBoost](https://img.shields.io/badge/XGBoost-2.0-red)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.103-green)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.27-ff4b4b)
+![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-306998?style=for-the-badge&logo=python&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-984400?style=for-the-badge&logo=scikitlearn&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-993B35?style=for-the-badge)
+![FastAPI](https://img.shields.io/badge/FastAPI-00776D?style=for-the-badge&logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-B51E40?style=for-the-badge&logo=streamlit&logoColor=white)
 
-> Système de détection de fraude bancaire utilisant Machine Learning sur 284,807 transactions réelles.
+[Installation](#installation-sur-windows) · [Entraînement](#entraîner-et-évaluer-le-modèle) · [Démo](#lancer-la-démo) · [Captures](#captures-décran)
 
-## 🎯 Résultats
+---
 
-| Modèle | F1-Score | ROC-AUC | Precision | Recall |
-|--------|----------|---------|-----------|--------|
-| XGBoost | **0.89+** | **0.97+** | 0.91+ | 0.87+ |
-| Random Forest | 0.87+ | 0.96+ | 0.89+ | 0.85+ |
-| Logistic Regression | 0.75+ | 0.93+ | 0.78+ | 0.72+ |
+Projet de détection de fraude à la carte bancaire. Il compare une régression logistique, une forêt aléatoire et XGBoost, puis expose le modèle retenu via FastAPI et un tableau de bord Streamlit.
 
-## 🏗️ Architecture
+Le jeu de données d'origine contient 284 807 transactions anonymisées, dont 492 fraudes. [Credit Card Fraud Detection sur Kaggle](https://www.kaggle.com/mlg-ulb/creditcardfraud/)
 
-```
-fraud_detection/
-├── data/           ← Dataset (raw + processed)
-├── src/            ← Pipeline ML complet
-├── models/         ← Modèle entraîné (.pkl)
-├── api/            ← FastAPI REST API
-├── dashboard/      ← Streamlit Dashboard
-└── outputs/        ← Visualisations EDA
-```
+## Installation sur Windows
 
-## 🚀 Installation rapide
+Depuis le dossier qui contient les dépôts, cloner le projet si nécessaire, puis ouvrir PowerShell à la racine du dépôt. Utiliser Python 3.11 ou 3.12.
 
-```bash
-git clone https://github.com/saadshr/fraud-detection
-cd fraud-detection
-python -m venv venv && venv\Scripts\activate
-pip install -r requirements.txt
+```powershell
+git clone https://github.com/saadshr/fraud_detection.git
+Set-Location fraud_detection
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+New-Item -ItemType Directory -Force data/raw
 ```
 
-## ⚙️ Utilisation
+Télécharger et extraire `creditcard.csv` depuis Kaggle, puis placer le fichier dans `data/raw/creditcard.csv`. Git ignore les données, les modèles et les graphiques générés.
 
-```bash
-# Pipeline complet
-python src/01_data_exploration.py
-python src/02_data_cleaning.py
-python src/03_eda.py
-python src/04_feature_engineering.py
-python src/05_train_models.py
-python src/06_evaluate.py
+## Entraîner et évaluer le modèle
 
-# API
-uvicorn api.main:app --reload
-# → http://localhost:8000/docs
-
-# Dashboard
-streamlit run dashboard/app.py
+```powershell
+.\.venv\Scripts\python.exe src/02_data_cleaning.py
+New-Item -ItemType Directory -Force outputs
+.\.venv\Scripts\python.exe src/05_train_models.py
+.\.venv\Scripts\python.exe src/06_evaluate.py
 ```
 
-## 🔑 Technologies
+Le script de préparation crée les fichiers d'entraînement et de test sous `data/processed/`. Il applique SMOTE au jeu d'entraînement. Le script d'entraînement affiche la précision, le rappel, le score F1 et la ROC-AUC, puis écrit dans `models/fraud_model.pkl` le modèle qui obtient le meilleur F1 sur le jeu de test. Le script d'évaluation produit `outputs/05_evaluation.png`.
 
-Python · Pandas · NumPy · Scikit-learn · XGBoost · SMOTE · FastAPI · Streamlit · Joblib · Seaborn · Matplotlib
+Pour explorer les données, utiliser `src/01_data_exploration.py`, `src/03_eda.py` ou le [notebook d'exploration](notebooks/01_exploration.ipynb). Le script `src/04_feature_engineering.py` génère des CSV supplémentaires. L'entraînement actuel lit `X_train.csv` et `X_test.csv`.
 
-## 👤 Auteur
+## Lancer la démo
 
-**Saad Sahraoui** — Étudiant Ingénieur IA & Data Science, ENSAM Rabat  
-📧 saad20azmm@gmail.com | 🔗 [GitHub](https://github.com/saadshr) | [LinkedIn](https://linkedin.com/in/saadshr)
+Exécuter ces commandes dans deux terminaux, depuis la racine du projet après l'entraînement.
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn api.main:app --reload
+.\.venv\Scripts\python.exe -m streamlit run dashboard/app.py
+```
+
+- Swagger à l'adresse [127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) et tableau de bord à l'adresse [localhost:8501](http://localhost:8501).
+- `GET /health` indique si le modèle est chargé et le nombre de variables attendues. `GET /model/info` affiche les informations du modèle.
+- `POST /predict` reçoit un objet JSON contenant une liste numérique `features`. Fournir une ligne déjà prétraitée selon l'ordre des colonnes de `data/processed/X_test.csv`. L'API transmet directement ces valeurs au modèle.
+- Le tableau de bord lit le modèle et les CSV de test générés localement. Le formulaire de saisie manuelle attend actuellement 25 valeurs, alors que le modèle entraîné avec le pipeline ci-dessus en attend 30. Utiliser Swagger pour tester une prédiction avec ce modèle.
+
+## Captures d’écran
+
+[![Tableau de bord Streamlit avec les résultats du modèle](screenshots/dashboard.png)](screenshots/dashboard.png)
+
+[Voir la capture de l’API dans Swagger](screenshots/api.png)
+
+## Auteur
+
+Saad Sahraoui · [GitHub](https://github.com/saadshr) · [LinkedIn](https://linkedin.com/in/saadshr)
