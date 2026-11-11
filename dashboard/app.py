@@ -3,6 +3,8 @@
 # But : dashboard interactif pour visualiser les prédictions
 # ============================================================
 
+from pathlib import Path
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -22,18 +24,35 @@ st.markdown("**Système de détection de fraude par carte bancaire — ML Dashbo
 st.divider()
 
 # ── CHARGER ───────────────────────────────────────────────
+ROOT = Path(__file__).resolve().parents[1]
+MODEL_PATH = ROOT / "models/fraud_model.pkl"
+X_TEST_PATH = ROOT / "data/processed/X_test.csv"
+Y_TEST_PATH = ROOT / "data/processed/y_test.csv"
+
+if not all(path.is_file() for path in (MODEL_PATH, X_TEST_PATH, Y_TEST_PATH)):
+    st.error("Le modèle ou les données de test sont manquants. Suivez les étapes d’entraînement dans le README.")
+    st.stop()
+
+
 @st.cache_resource
 def load_model():
-    return joblib.load('models/fraud_model.pkl')
+    return joblib.load(MODEL_PATH)
 
 @st.cache_data
 def load_data():
-    X_test = pd.read_csv('data/processed/X_test.csv')
-    y_test = pd.read_csv('data/processed/y_test.csv').squeeze()
+    X_test = pd.read_csv(X_TEST_PATH)
+    y_test = pd.read_csv(Y_TEST_PATH).squeeze(axis='columns')
     return X_test, y_test
 
 model = load_model()
 X_test, y_test = load_data()
+n_features = model.n_features_in_
+feature_names = list(getattr(model, "feature_names_in_", X_test.columns))
+if len(feature_names) != n_features or set(feature_names) != set(X_test.columns):
+    st.error("Les colonnes de test ne correspondent pas au modèle. Régénérez les données et le modèle ensemble.")
+    st.stop()
+
+X_test = X_test.loc[:, feature_names]
 y_pred       = model.predict(X_test)
 y_pred_proba = model.predict_proba(X_test)[:, 1]
 
@@ -81,36 +100,46 @@ with tab1:
 
 with tab2:
     st.subheader("🔮 Analyser une transaction")
-    st.info("Entrez les 25 valeurs de features séparées par des virgules")
-    user_input = st.text_area(
-        "Features (25 valeurs)",
-        value="0.1,-1.2,0.5,-0.3,1.1,-0.8,0.2,-0.1,0.9,-1.5,0.3,-0.6,1.2,-0.4,0.7,-0.2,0.5,-0.9,1.0,-0.3,0.8,-0.5,0.1,0.4,-0.7"
-    )
-    if st.button("🔍 Analyser", type="primary"):
+    st.info(f"Entrez {n_features} valeurs numériques déjà prétraitées, séparées par des virgules.")
+    st.caption("Le formulaire contient un exemple prérempli à partir du jeu de test.")
+    example = ", ".join(map(str, X_test.iloc[0]))
+    with st.form("transaction"):
+        user_input = st.text_area(
+            f"Variables ({n_features} valeurs)",
+            value=example,
+            help="Ordre des variables : " + ", ".join(feature_names),
+        )
+        submitted = st.form_submit_button("🔍 Analyser", type="primary")
+
+    if submitted:
         try:
-            values = [float(x.strip()) for x in user_input.split(',')]
-            if len(values) == 25:
-                X_input = np.array(values).reshape(1, -1)
-                pred  = model.predict(X_input)[0]
-                proba = model.predict_proba(X_input)[0][1]
-                if pred == 1:
-                    st.error(f"🚨 FRAUDE DÉTECTÉE — Probabilité : {proba:.1%}")
-                else:
-                    st.success(f"✅ TRANSACTION NORMALE — Probabilité fraude : {proba:.1%}")
-                st.progress(float(proba))
+            values = [float(value.strip()) for value in user_input.split(",")]
+        except ValueError:
+            st.error("Saisissez uniquement des nombres séparés par des virgules, avec un point pour les décimales.")
+        else:
+            if len(values) != n_features:
+                st.error(f"{n_features} valeurs requises, {len(values)} reçues.")
+            elif not np.isfinite(values).all():
+                st.error("Toutes les valeurs doivent être des nombres finis.")
             else:
-                st.error(f"25 valeurs requises, vous avez entré {len(values)}")
-        except:
-            st.error("Format invalide. Utilisez des nombres séparés par des virgules.")
+                transaction = pd.DataFrame([values], columns=feature_names)
+                prediction = model.predict(transaction)[0]
+                probability = float(model.predict_proba(transaction)[0][1])
+                if prediction == 1:
+                    st.error(f"🚨 FRAUDE DÉTECTÉE — Probabilité : {probability:.1%}")
+                else:
+                    st.success(f"✅ TRANSACTION NORMALE — Probabilité de fraude : {probability:.1%}")
+                st.progress(probability)
+
 
 with tab3:
-    st.markdown("""
+    st.markdown(f"""
     ## Smart Fraud Detection System
     **Développé par : Saad Sahraoui — ENSAM Rabat**
     
     - **Dataset** : Credit Card Fraud Detection (Kaggle — 284,807 transactions)
-    - **Modèle** : Random Forest / XGBoost avec SMOTE
-    - **Features** : 25 features sélectionnées
+    - **Modèle** : {type(model).__name__} avec SMOTE
+    - **Features** : {n_features} variables attendues
     - **GitHub** : github.com/saadshr
     """)
 

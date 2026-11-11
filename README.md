@@ -7,7 +7,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-00776D?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-B51E40?style=for-the-badge&logo=streamlit&logoColor=white)
 
-[Installation](#installation-sur-windows) · [Entraînement](#entraîner-et-évaluer-le-modèle) · [Démo](#lancer-la-démo) · [Captures](#captures-décran)
+[Installation](#installation-sur-windows) · [Entraînement](#entraîner-et-évaluer-le-modèle) · [Démo dans VS Code](#lancer-la-démo-dans-vs-code) · [Captures](#captures-décran) · [Résultats](#résultats)
 
 ---
 
@@ -42,25 +42,52 @@ Le script de préparation crée les fichiers d'entraînement et de test sous `da
 
 Pour explorer les données, utiliser `src/01_data_exploration.py`, `src/03_eda.py` ou le [notebook d'exploration](notebooks/01_exploration.ipynb). Le script `src/04_feature_engineering.py` génère des CSV supplémentaires. L'entraînement actuel lit `X_train.csv` et `X_test.csv`.
 
-## Lancer la démo
+## Lancer la démo dans VS Code
 
-Exécuter ces commandes dans deux terminaux, depuis la racine du projet après l'entraînement.
+1. Dans VS Code, ouvrir le dossier `fraud_detection` via **Fichier → Ouvrir le dossier**.
+2. Ouvrir **Terminal → Nouveau terminal**. Après la préparation des données et l’entraînement, lancer Streamlit depuis la racine du projet.
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn api.main:app --reload
 .\.venv\Scripts\python.exe -m streamlit run dashboard/app.py
 ```
 
-- Swagger à l'adresse [127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) et tableau de bord à l'adresse [localhost:8501](http://localhost:8501).
-- `GET /health` indique si le modèle est chargé et le nombre de variables attendues. `GET /model/info` affiche les informations du modèle.
-- `POST /predict` reçoit un objet JSON contenant une liste numérique `features`. Fournir une ligne déjà prétraitée selon l'ordre des colonnes de `data/processed/X_test.csv`. L'API transmet directement ces valeurs au modèle.
-- Le tableau de bord lit le modèle et les CSV de test générés localement. Le formulaire de saisie manuelle attend actuellement 25 valeurs, alors que le modèle entraîné avec le pipeline ci-dessus en attend 30. Utiliser Swagger pour tester une prédiction avec ce modèle.
+3. Garder le terminal ouvert et ouvrir [localhost:8501](http://localhost:8501) dans le navigateur. Utiliser `Ctrl+C` dans le terminal pour arrêter le serveur.
+
+Sur une installation où les dépendances sont déjà disponibles avec `python`, la commande `python -m streamlit run dashboard/app.py` fonctionne aussi.
+
+### Vérifier la page
+
+1. Dans **Analyse**, vérifier que la précision, le rappel, le F1, la ROC-AUC et la matrice de confusion s’affichent.
+2. Dans **Prédiction**, cliquer sur **Analyser** avec l’exemple prérempli. La page affiche la classe prédite et la probabilité de fraude. Le nombre de variables et leur ordre suivent le modèle entraîné et les colonnes du CSV de test.
+3. Remplacer le contenu par `1, 2` et cliquer à nouveau sur **Analyser**. La page doit afficher un message indiquant le nombre de valeurs attendu.
+
+### API facultative
+
+Pour lancer FastAPI en parallèle, ouvrir un deuxième terminal.
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn api.main:app --reload
+```
+
+Swagger est accessible sur [127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). `GET /health` indique si le modèle est chargé. `GET /model/info` décrit le modèle. `POST /predict` reçoit une liste numérique `features` déjà prétraitée, dans l’ordre des colonnes de `data/processed/X_test.csv`.
 
 ## Captures d’écran
 
 [![Tableau de bord Streamlit avec les résultats du modèle](screenshots/dashboard.png)](screenshots/dashboard.png)
 
 [Voir la capture de l’API dans Swagger](screenshots/api.png)
+
+## Résultats
+
+Exécution locale du 11 novembre 2026 sur le jeu de données Kaggle. Le pipeline a comparé les trois modèles sur 56 746 transactions de test, dont 95 fraudes.
+
+- **Forêt aléatoire** · précision 54,68 %, rappel 80,00 %, F1 0,6496 et ROC-AUC 0,9806.
+- **XGBoost** · précision 37,86 %, rappel 82,11 %, F1 0,5183 et ROC-AUC 0,9715.
+- **Régression logistique** · précision 5,33 %, rappel 87,37 %, F1 0,1004 et ROC-AUC 0,9619.
+
+La forêt aléatoire a détecté 76 fraudes, en a manqué 19 et a produit 63 fausses alertes. Ces mesures décrivent cette exécution. Le pipeline utilise le même jeu de test pour sélectionner le modèle et rapporter ses scores.
+
+Le rapport d’évaluation et le graphique de cette exécution se trouvent localement dans `outputs/evaluation-results.txt` et `outputs/05_evaluation.png`.
 
 ## Auteur
 
