@@ -1,0 +1,89 @@
+.block-container {
+  max-width: 1260px;
+  padding-top: 3.5rem;
+  padding-bottom: 4rem;
+}
+
+.fraud-hero {
+  background: radial-gradient(ellipse at 97% 0%, #176362 0%, transparent 55%),
+              linear-gradient(115deg, #142438, #123944);
+  border-radius: 1.25rem;
+  padding: clamp(1.5rem, 5vw, 3.8rem);
+  margin-bottom: 1rem;
+}
+
+.fraud-hero h1 {
+  color: #fff;
+  font-size: clamp(2rem, 4.4vw, 3.75rem);
+  line-height: 1.08;
+  max-width: 780px;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.fraud-hero .fraud-kicker {
+  color: #a1f0df;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  margin-bottom: .85rem;
+}
+
+.fraud-hero .fraud-intro {
+  color: #e1eef4;
+  font-size: 1.12rem;
+  max-width: 590px;
+  margin: 0;
+}
+
+[data-testid="stTabs"] [role="tablist"] {
+  gap: clamp(.35rem, 2vw, 1.75rem);
+  margin-bottom: 1.1rem;
+}
+
+[data-testid="stTabs"] [role="tab"] p {
+  font-weight: 650;
+}
+
+[data-testid="stMetric"] {
+  padding: .85rem 1rem;
+  border: 1px solid rgba(100, 116, 139, .28);
+  border-radius: .85rem;
+}
+
+[data-testid="stForm"] {
+  border-radius: .85rem;
+}
+
+.fraud-matrix {
+  border-collapse: separate !important;
+  border-spacing: .4rem;
+  width: 100%;
+  margin: .35rem 0 1rem;
+  font-size: .88rem;
+}
+
+.fraud-matrix th, .fraud-matrix td {
+  border: 0 !important;
+  padding: .7rem .55rem !important;
+}
+
+.fraud-matrix td {
+  border-radius: .65rem;
+  text-align: center;
+}
+
+.fraud-matrix td strong {
+  display: block;
+  font-size: 1.55rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.fraud-matrix .correct { background: #d9f4ed; color: #075d50; }
+.fraud-matrix .incorrect { background: #ffecd3; color: #793c0b; }
+
+@media (max-width: 600px) {
+  .block-container { padding-top: 2.5rem; }
+  .fraud-hero .fraud-intro { font-size: 1rem; }
+  .fraud-matrix { font-size: .78rem; }
+}

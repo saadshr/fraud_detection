@@ -57,9 +57,10 @@ Sur une installation où les dépendances sont déjà disponibles avec `python`,
 
 ### Vérifier la page
 
-1. Dans **Analyse**, vérifier que la précision, le rappel, le F1, la ROC-AUC et la matrice de confusion s’affichent.
-2. Dans **Prédiction**, cliquer sur **Analyser** avec l’exemple prérempli. La page affiche la classe prédite et la probabilité de fraude. Le nombre de variables et leur ordre suivent le modèle entraîné et les colonnes du CSV de test.
-3. Remplacer le contenu par `1, 2` et cliquer à nouveau sur **Analyser**. La page doit afficher un message indiquant le nombre de valeurs attendu.
+1. Dans **Vue d’ensemble**, lire le contexte du projet et les étapes de préparation des données.
+2. Dans **Simulateur**, choisir **Exemple normal** ou **Exemple de fraude**, puis cliquer sur **Analyser**. Comparer la classe prédite, le score de fraude et la classe réelle.
+3. Choisir **Saisie manuelle**, entrer `1, 2` et cliquer sur **Analyser** pour vérifier la validation. Pour une prédiction valide, copier une ligne de `data/processed/X_test.csv` sans l’en-tête.
+4. Dans **Résultats**, vérifier les quatre métriques, la matrice de confusion et la courbe ROC.
 
 ### API facultative
 
@@ -73,7 +74,7 @@ Swagger est accessible sur [127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). `G
 
 ## Captures d’écran
 
-[![Tableau de bord Streamlit avec les résultats du modèle](screenshots/dashboard.png)](screenshots/dashboard.png)
+[![Aperçu du tableau de bord Streamlit](screenshots/dashboard.png)](screenshots/dashboard.png)
 
 [Voir la capture de l’API dans Swagger](screenshots/api.png)
 
