@@ -38,7 +38,7 @@ New-Item -ItemType Directory -Force outputs
 .\.venv\Scripts\python.exe src/06_evaluate.py
 ```
 
-Le script de préparation crée les fichiers d'entraînement et de test sous `data/processed/`. Il applique SMOTE au jeu d'entraînement. Le script d'entraînement affiche la précision, le rappel, le score F1 et la ROC-AUC, puis écrit dans `models/fraud_model.pkl` le modèle qui obtient le meilleur F1 sur le jeu de test. Le script d'évaluation produit `outputs/05_evaluation.png`.
+Le script de préparation crée les fichiers d'entraînement et de test sous le repertoire `data/processed/`. Il applique SMOTE au jeu d'entraînement. Le script d'entraînement affiche la précision, le rappel, le score F1 et la ROC-AUC, puis écrit dans `models/fraud_model.pkl` le modèle qui obtient le meilleur F1 sur le jeu de test. Le script d'évaluation produit `outputs/05_evaluation.png`.
 
 Pour explorer les données, utiliser `src/01_data_exploration.py`, `src/03_eda.py` ou le [notebook d'exploration](notebooks/01_exploration.ipynb). Le script `src/04_feature_engineering.py` génère des CSV supplémentaires. L'entraînement actuel lit `X_train.csv` et `X_test.csv`.
 
